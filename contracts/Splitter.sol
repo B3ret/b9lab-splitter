@@ -6,9 +6,7 @@ contract Splitter  {
 
     mapping(address => uint256) public _balances;
 
-	event BalanceChanged(address indexed addr, uint256 newAmount);
-
-    constructor() public { }
+    event BalanceChanged(address indexed addr, uint256 newAmount);
 
     // Explicitely disable the fallback from being payable
     //
