@@ -4,6 +4,6 @@ const Splitter = artifacts.require("Splitter");
 //       parameters. Do we need a factory contract to use migrations with
 //       Truffle?
 //
-module.exports = function(deployer, network, accounts) {
-  deployer.deploy(Splitter, accounts[1], accounts[2]);
+module.exports = function(deployer) {
+  deployer.deploy(Splitter);
 };
