@@ -2,7 +2,7 @@
 //
 pragma solidity ^0.5.0;
 
-import './Ownable.sol';
+import "./Ownable.sol";
 
 // TODO: I'm not sure if we should make Beneficiary its own contract. It seems like the correct thing to do,
 // but I'm afraid of attack vectors between updating all the Beneficiary contract instances, i.e.,
@@ -27,8 +27,8 @@ contract HasBeneficiaries is Ownable {
     Beneficiary public _beneficiary0;
     Beneficiary public _beneficiary1;
 
-	event BeneficiaryAdded(address indexed beneficiaryAddr);
-	event BeneficiaryReservedAmountChanged(address indexed beneficiaryAddr, uint256 newAmount);
+    event BeneficiaryAdded(address indexed beneficiaryAddr);
+    event BeneficiaryReservedAmountChanged(address indexed beneficiaryAddr, uint256 newAmount);
 
     constructor(address beneficiary0, address beneficiary1) public {
         _beneficiary0 = Beneficiary(beneficiary0, 0);
@@ -53,7 +53,8 @@ contract HasBeneficiaries is Ownable {
     }
 
     function getTotalReservedAmount() public view returns(uint256) {
-        uint256 sum = _beneficiary0.reservedAmount + _beneficiary1.reservedAmount;
+        uint256 sum = _beneficiary0.reservedAmount +
+                      _beneficiary1.reservedAmount;
 
         assert(sum >= _beneficiary0.reservedAmount && sum >= _beneficiary1.reservedAmount);
 
@@ -76,9 +77,9 @@ contract HasBeneficiaries is Ownable {
         // Since all variables are uint256, this is also an overflow check for the following
         // two statements.
         //
-        assert(address(this).balance >= _beneficiary0.reservedAmount
-                                      + _beneficiary1.reservedAmount
-                                      + 2 * amount);
+        assert(address(this).balance >= _beneficiary0.reservedAmount +
+                                        _beneficiary1.reservedAmount +
+                                        2 * amount);
 
         _beneficiary0.reservedAmount += amount;
         _beneficiary1.reservedAmount += amount;

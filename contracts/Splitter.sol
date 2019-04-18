@@ -2,11 +2,11 @@
 //
 pragma solidity ^0.5.0;
 
-import './HasBeneficiaries.sol';
+import "./HasBeneficiaries.sol";
 
 contract Splitter is HasBeneficiaries {
 
-	event SplitPerformed();
+    event SplitPerformed();
 	event BeneficiaryWithdrew(address indexed beneficiaryAddr, uint256 amount);
 
     constructor(address beneficiary0, address beneficiary1) public

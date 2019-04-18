@@ -1,0 +1,4 @@
+# Ignored by solium:
+#
+/build
+/node_modules

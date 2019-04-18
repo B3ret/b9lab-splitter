@@ -8,7 +8,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "truffle test"
+    "test": "truffle test",
+    "solium:lint:fix": "solium lint -d ./contracts --fix",
+    "solium:lint": "solium lint -d ./contracts"
   },
   "repository": {
     "type": "git",
