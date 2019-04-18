@@ -1,4 +1,5 @@
 /**
+ * HUGO
  * Use this file to configure your truffle project. It's seeded with some
  * common settings for different networks and features like migrations,
  * compilation and testing. Uncomment the ones you need or modify
@@ -44,7 +45,7 @@ module.exports = {
       development: {
         host: 'localhost',
         port: 8545,
-        network_id: '*' // Match any network id
+        network_id: '*'
       },
       ropsten: {
         host: 'localhost',
@@ -88,7 +89,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      // version: "0.5.1",    // Fetch exact version from solc-bin (default: truffle's version)
+      // version: "0.5.2",    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {

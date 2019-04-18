@@ -1,0 +1,26 @@
+{
+  "name": "b9lab-splitter",
+  "version": "1.0.0",
+  "description": "B9Lab Splitter Exercise B3ret",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/B3ret/b9lab-splitter.git"
+  },
+  "author": "b3ret",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/B3ret/b9lab-splitter/issues"
+  },
+  "homepage": "https://github.com/B3ret/b9lab-splitter#readme",
+  "dependencies": {
+    "truffle-assertions": "^0.8.2"
+  }
+}

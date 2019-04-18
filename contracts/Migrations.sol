@@ -1,3 +1,5 @@
+// TODO: Fix a version before release
+//
 pragma solidity >=0.4.21 <0.6.0;
 
 contract Migrations {
