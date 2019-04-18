@@ -17,6 +17,9 @@ contract Splitter  {
     }
 
     function splitFunds(address recipientOne, address recipientTwo) external payable {
+        require(recipientOne != address(0));
+        require(recipientTwo != address(0));
+
         // If the sender sends an odd amount of ether, we'll pay recipientOne one
         // wei more. This is better than any alternative:
         //  - Reverting will cost the sender much more than 1 wei
@@ -41,6 +44,8 @@ contract Splitter  {
 
     function withdraw() external {
         uint256 sendAmount = _balances[msg.sender];
+
+        require(sendAmount > 0);
 
         _balances[msg.sender] = 0;
 

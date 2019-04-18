@@ -3,6 +3,8 @@ const truffleAssert = require("truffle-assertions");
 const BN = web3.utils.BN;
 
 contract("Splitter", accounts => {
+  const nullAddress = '0x0000000000000000000000000000000000000000'; // Is there no other way to get this?
+
   let alice = accounts[0];
   let bob   = accounts[1];
   let carol = accounts[2]; // Will have an initial splitter balance
@@ -39,6 +41,14 @@ contract("Splitter", accounts => {
   it("should properly return splitter balance on getBalance() account with balance", async () => {
     splitterBalanceCarol = web3.utils.toBN(await inst.getBalance(carol));
     assert.equal(splitterBalanceCarol.toString(), initialSplitterBalanceCarol.toString(), "Carols's splitter balance is wrong.");
+  });
+
+  it("should revert splitFunds() with first address 0x0", async () => {
+    await truffleAssert.reverts(inst.splitFunds(nullAddress, carol, { from: alice, value: 0 }));
+  });
+
+  it("should revert splitFunds() with second address 0x0", async () => {
+    await truffleAssert.reverts(inst.splitFunds(bob, nullAddress, { from: alice, value: 0 }));
   });
 
   it("shouldn't touch splitter balances on splitFunds() with nothing transferred", async () => {
@@ -105,8 +115,14 @@ contract("Splitter", accounts => {
     });
   });
 
+  it("should revert on withdraw() for zero balance", async () => {
+    assert.isTrue(initialSplitterBalanceBob.eq(new BN(0)), "Precond: Test case only makes sense if bobs's splitter balance is zero.");
+
+    await truffleAssert.reverts(inst.withdraw({ from: bob }));
+  });
+
   it("should send full splitter balance on withdraw()", async () => {
-    assert.isTrue(initialSplitterBalanceCarol.gt(new BN(0)), "Precond: Test case only makes sense if carols's splitter balance is non-zero.");
+    assert.isTrue(initialSplitterBalanceCarol.gt(new BN(0)), "Precond: Test case only makes sense if Carols's splitter balance is non-zero.");
 
     const gasPrice =  web3.utils.toBN(await web3.eth.getGasPrice());
     const tx = await inst.withdraw({ from: carol, gasPrice: gasPrice });
@@ -119,7 +135,7 @@ contract("Splitter", accounts => {
   });
 
   it("should zero out splitter balance on withdraw()", async () => {
-    assert.isTrue(initialSplitterBalanceCarol.gt(new BN(0)), "Precond: Test case only makes sense if carols's splitter balance is non-zero.");
+    assert.isTrue(initialSplitterBalanceCarol.gt(new BN(0)), "Precond: Test case only makes sense if Carols's splitter balance is non-zero.");
 
     await inst.withdraw({ from: carol });
 
