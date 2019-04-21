@@ -2,7 +2,9 @@
 //
 pragma solidity ^0.5.0;
 
-contract Splitter  {
+import "./Pausable.sol";
+
+contract Splitter is Pausable {
 
     mapping(address => uint256) public _balances;
 
@@ -16,7 +18,7 @@ contract Splitter  {
         return _balances[recipient];
     }
 
-    function splitFunds(address recipientOne, address recipientTwo) external payable {
+    function splitFunds(address recipientOne, address recipientTwo) external payable whenNotPaused {
         require(recipientOne != address(0));
         require(recipientTwo != address(0));
 

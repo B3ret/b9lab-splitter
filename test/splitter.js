@@ -152,4 +152,41 @@ contract("Splitter", accounts => {
     });
   });
 
+  // Ownable and Pausable have their own test cases in OpenZeppelin, we only test their
+  // integration with our splitter, as well as changes we did to Pausable in here.
+  //
+  it("should make splitter creator the owner", async () => {
+    let owner = await inst.owner();
+
+    assert.equal(owner, alice, "Alice is not the owner!")
+  });
+  it("should not be paused at start", async () => {
+    let isPaused = await inst.paused();
+
+    assert.equal(isPaused, false, "Splitter is paused at start!")
+  });
+  it("should not allow non-owner to pause the splitter", async () => {
+    await truffleAssert.reverts(inst.pause({ from: bob }));
+  });
+  it("should not allow non-owner to un-pause the splitter", async () => {
+    await inst.pause({ from: alice});
+    await truffleAssert.reverts(inst.unpause({ from: carol }));
+  });
+  it("should not allow splitting for paused splitter", async () => {
+    await inst.pause({ from: alice});
+
+    const payAmount = web3.utils.toWei(new BN(2), "finney");
+    await truffleAssert.reverts(inst.splitFunds(bob, carol, { from: alice, value: payAmount }));
+  });
+  it("should allow withdrawal for paused splitter", async () => {
+    await inst.pause({ from: alice});
+    await inst.withdraw({ from: carol });
+
+    const splitterBalanceCarol = web3.utils.toBN(await inst.getBalance(carol));
+
+    assert.equal(splitterBalanceCarol.toString(), "0", "Carols's splitter balance is non-zero.");
+  });
+
+
+
 });
