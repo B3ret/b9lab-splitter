@@ -8,7 +8,9 @@ contract Splitter is Pausable {
 
     mapping(address => uint256) public _balances;
 
-    event BalanceChanged(address indexed addr, uint256 newAmount);
+    event LogWithdraw(address indexed addr, uint256 newAmount);
+
+    event LogSplitFunds(address indexed sender, address indexed recipientOne, address indexed recipientTwo, uint256 paidAmount);
 
     // Explicitely disable the fallback from being payable
     //
@@ -40,8 +42,7 @@ contract Splitter is Pausable {
         _balances[recipientOne] = newAmountOne;
         _balances[recipientTwo] = newAmountTwo;
 
-        emit BalanceChanged(recipientOne, newAmountOne);
-        emit BalanceChanged(recipientTwo, newAmountTwo);
+        emit LogSplitFunds(msg.sender, recipientOne, recipientTwo, msg.value);
     }
 
     function withdraw() external {
@@ -53,6 +54,6 @@ contract Splitter is Pausable {
 
         msg.sender.transfer(sendAmount);
 
-        emit BalanceChanged(msg.sender, 0);
+        emit LogWithdraw(msg.sender, 0);
     }
 }

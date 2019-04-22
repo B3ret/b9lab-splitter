@@ -100,18 +100,12 @@ contract("Splitter", accounts => {
     assert.equal(personalBalanceCarol.toString(), initialPersonalBalanceCarol.toString(), "Carlos's personal balance changed.");
   });
 
-  it("should emit BalanceChanged() events on splitFunds()", async () => {
+  it("should emit LogSplitFunds() events on splitFunds()", async () => {
     const payAmount = web3.utils.toWei(new BN(2), "finney");
     const tx = await inst.splitFunds(bob, carol, { from: alice, value: payAmount });
 
-    const splitterBalanceBob   = web3.utils.toBN(await inst.getBalance(bob));
-    const splitterBalanceCarol = web3.utils.toBN(await inst.getBalance(carol));
-
-    truffleAssert.eventEmitted(tx, "BalanceChanged", ev => {
-      return ev.addr == bob && ev.newAmount == splitterBalanceBob.toString();
-    });
-    truffleAssert.eventEmitted(tx, "BalanceChanged", ev => {
-      return ev.addr == carol && ev.newAmount == splitterBalanceCarol.toString();
+    truffleAssert.eventEmitted(tx, "LogSplitFunds", ev => {
+      return ev.sender == alice && ev.recipientOne == bob && ev.recipientTwo == carol && ev.paidAmount == payAmount.toString();
     });
   });
 
@@ -144,10 +138,10 @@ contract("Splitter", accounts => {
     assert.equal(splitterBalanceCarol.toString(), "0", "Carols's splitter balance is non-zero.");
   });
 
-  it("should emit BalanceChanged() event on withdraw()", async () => {
+  it("should emit LogWithdraw() event on withdraw()", async () => {
     let tx = await inst.withdraw({ from: carol });
 
-    truffleAssert.eventEmitted(tx, "BalanceChanged", ev => {
+    truffleAssert.eventEmitted(tx, "LogWithdraw", ev => {
       return ev.addr == carol && ev.newAmount == '0';
     });
   });
