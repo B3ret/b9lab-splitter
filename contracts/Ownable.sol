@@ -1,5 +1,6 @@
 // B3ret: Copy of OpenZeppelin Ownable implementation (copied 2019-04-21),
 //        Changes: - solidity version ^0.5.2 > ^0.5.0
+//                 - Added error codes to require() calls
 
 pragma solidity ^0.5.0;
 
@@ -33,7 +34,7 @@ contract Ownable {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(isOwner());
+        require(isOwner(), "PRE_SENDER_WAS_NOT_OWNER");
         _;
     }
 
@@ -69,7 +70,7 @@ contract Ownable {
      * @param newOwner The address to transfer ownership to.
      */
     function _transferOwnership(address newOwner) internal {
-        require(newOwner != address(0));
+        require(newOwner != address(0), "PRE_NEW_OWNER_WAS_NULL");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }

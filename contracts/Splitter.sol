@@ -21,8 +21,8 @@ contract Splitter is Pausable {
     }
 
     function splitFunds(address recipientOne, address recipientTwo) external payable whenNotPaused {
-        require(recipientOne != address(0));
-        require(recipientTwo != address(0));
+        require(recipientOne != address(0), "PRE_ADDRESS_WAS_NULL");
+        require(recipientTwo != address(0), "PRE_ADDRESS_WAS_NULL");
 
         // If the sender sends an odd amount of ether, we'll pay recipientOne one
         // wei more. This is better than any alternative:
@@ -36,8 +36,8 @@ contract Splitter is Pausable {
         uint256 newAmountOne = _balances[recipientOne] + amountOne;
         uint256 newAmountTwo = _balances[recipientTwo] + amountTwo;
 
-        require(newAmountOne >= _balances[recipientOne] && newAmountOne >= amountOne);
-        require(newAmountTwo >= _balances[recipientTwo] && newAmountTwo >= amountTwo);
+        require(newAmountOne >= _balances[recipientOne] && newAmountOne >= amountOne, "ERR_WOULD_OVERFLOW");
+        require(newAmountTwo >= _balances[recipientTwo] && newAmountTwo >= amountTwo, "ERR_WOULD_OVERFLOW");
 
         _balances[recipientOne] = newAmountOne;
         _balances[recipientTwo] = newAmountTwo;
@@ -48,7 +48,7 @@ contract Splitter is Pausable {
     function withdraw() external {
         uint256 sendAmount = _balances[msg.sender];
 
-        require(sendAmount > 0);
+        require(sendAmount > 0, "PRE_BALANCE_WAS_ZERO");
 
         _balances[msg.sender] = 0;
 

@@ -1,6 +1,7 @@
 // B3ret: Copy of OpenZeppelin Pausable implementation (copied 2019-04-21),
 //        Changes: - solidity version ^0.5.2 >> ^0.5.0
 //                 - Removed PauserRole, replaced by Ownable, i.e., only the owner can pause
+//                 - Added error codes to require() calls
 
 pragma solidity ^0.5.0;
 
@@ -31,7 +32,7 @@ contract Pausable is Ownable {
      * @dev Modifier to make a function callable only when the contract is not paused.
      */
     modifier whenNotPaused() {
-        require(!_paused);
+        require(!_paused, "PRE_STATE_WAS_PAUSED");
         _;
     }
 
@@ -39,7 +40,7 @@ contract Pausable is Ownable {
      * @dev Modifier to make a function callable only when the contract is paused.
      */
     modifier whenPaused() {
-        require(_paused);
+        require(_paused, "PRE_STATE_WAS_UNPAUSED");
         _;
     }
 
