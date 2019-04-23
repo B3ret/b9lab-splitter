@@ -20,27 +20,37 @@ contract Splitter is Pausable {
         return _balances[recipient];
     }
 
+    /**
+     * If an odd amount of wei is sent, the odd wei is credited to the owners account.
+     * If you want to avoid this, send an even amount of wei.
+     */
     function splitFunds(address recipientOne, address recipientTwo) external payable whenNotPaused {
         require(recipientOne != address(0), "PRE_ADDRESS_WAS_NULL");
         require(recipientTwo != address(0), "PRE_ADDRESS_WAS_NULL");
+        require(recipientOne != recipientTwo, "PRE_ADDRESSES_WERE_NOT_DIFFERENT");
 
-        // If the sender sends an odd amount of ether, we'll pay recipientOne one
-        // wei more. This is better than any alternative:
-        //  - Reverting will cost the sender much more than 1 wei
-        //  - Randomly assigning one wei also costs much more than 1 wei. If the sender wants,
-        //    he can randomly swap recipientOne and recipientTwo.
+        uint256 amount = msg.value / 2;
 
-        uint256 amountTwo = msg.value / 2;
-        uint256 amountOne = msg.value - amountTwo;
+        uint256 newAmountOne = _balances[recipientOne] + amount;
+        uint256 newAmountTwo = _balances[recipientTwo] + amount;
 
-        uint256 newAmountOne = _balances[recipientOne] + amountOne;
-        uint256 newAmountTwo = _balances[recipientTwo] + amountTwo;
-
-        require(newAmountOne >= _balances[recipientOne] && newAmountOne >= amountOne, "ERR_WOULD_OVERFLOW");
-        require(newAmountTwo >= _balances[recipientTwo] && newAmountTwo >= amountTwo, "ERR_WOULD_OVERFLOW");
+        require(newAmountOne >= _balances[recipientOne] && newAmountOne >= amount, "ERR_WOULD_OVERFLOW");
+        require(newAmountTwo >= _balances[recipientTwo] && newAmountTwo >= amount, "ERR_WOULD_OVERFLOW");
 
         _balances[recipientOne] = newAmountOne;
         _balances[recipientTwo] = newAmountTwo;
+
+        // If the sender sends an odd amount, we'll put that extra wei into
+        // the owners account, so he can collect the dust in case it accumulates.
+        // (This has to be after the first two updates, in case owner is also one
+        //  of the recipients.)
+        //
+        bool hasDust = (msg.value % 2) > 0;
+        if(hasDust) {
+            uint256 newBalanceOwner = _balances[owner()] + 1;
+            require(newBalanceOwner >= _balances[owner()], "ERR_WOULD_OVERFLOW");
+            _balances[owner()] = newBalanceOwner;
+        }
 
         emit LogSplitFunds(msg.sender, recipientOne, recipientTwo, msg.value);
     }

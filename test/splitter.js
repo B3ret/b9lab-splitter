@@ -5,14 +5,14 @@ const BN = web3.utils.BN;
 contract("Splitter", accounts => {
   const nullAddress = '0x0000000000000000000000000000000000000000'; // Is there no other way to get this?
 
-  let alice = accounts[0];
+  let alice = accounts[0]; // Will have an initial splitter balance
   let bob   = accounts[1];
   let carol = accounts[2]; // Will have an initial splitter balance
-  let dingo = accounts[3]; // Will have an initial splitter balance
 
   let inst;
   let initialPersonalBalanceBob;
   let initialPersonalBalanceCarol;
+  let initialSplitterBalanceAlice;
   let initialSplitterBalanceBob;
   let initialSplitterBalanceCarol;
 
@@ -20,10 +20,11 @@ contract("Splitter", accounts => {
     inst = await Splitter.new();
 
     const payAmount = web3.utils.toWei(new BN(2), "finney");
-    await inst.splitFunds(carol, dingo, { from: alice, value: payAmount });
+    await inst.splitFunds(alice, carol, { from: alice, value: payAmount });
 
     initialPersonalBalanceBob   = web3.utils.toBN(await web3.eth.getBalance(bob));
     initialPersonalBalanceCarol = web3.utils.toBN(await web3.eth.getBalance(carol));
+    initialSplitterBalanceAlice = web3.utils.toWei(new BN(1), "finney");
     initialSplitterBalanceBob   = new BN(0);
     initialSplitterBalanceCarol = web3.utils.toWei(new BN(1), "finney");
   });
@@ -51,6 +52,10 @@ contract("Splitter", accounts => {
     await truffleAssert.reverts(inst.splitFunds(bob, nullAddress, { from: alice, value: 0 }));
   });
 
+  it("should revert splitFunds() with matching addresses", async () => {
+    await truffleAssert.reverts(inst.splitFunds(bob, bob, { from: alice, value: 0 }));
+  });
+
   it("shouldn't touch splitter balances on splitFunds() with nothing transferred", async () => {
     await inst.splitFunds(bob, carol, { from: alice, value: 0 });
 
@@ -65,12 +70,15 @@ contract("Splitter", accounts => {
     const payAmount = web3.utils.toWei(new BN(2), "finney");
     await inst.splitFunds(bob, carol, { from: alice, value: payAmount });
 
+    const splitterBalanceAlice = web3.utils.toBN(await inst.getBalance(alice));
     const splitterBalanceBob   = web3.utils.toBN(await inst.getBalance(bob));
     const splitterBalanceCarol = web3.utils.toBN(await inst.getBalance(carol));
 
+    const splitterBalanceAliceExpected = initialSplitterBalanceAlice;
     const splitterBalanceBobExpected   = initialSplitterBalanceBob  .add(payAmount.div(new BN(2)));
     const splitterBalanceCarolExpected = initialSplitterBalanceCarol.add(payAmount.div(new BN(2)));
 
+    assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
     assert.equal(splitterBalanceBob  .toString(), splitterBalanceBobExpected.toString(), "Bob's splitter balance is wrong.");
     assert.equal(splitterBalanceCarol.toString(), splitterBalanceCarolExpected.toString(), "Carlos's splitter balance is wrong.");
   });
@@ -79,14 +87,45 @@ contract("Splitter", accounts => {
     const payAmount = web3.utils.toWei(new BN(2), "finney").add(new BN(1));
     await inst.splitFunds(bob, carol, { from: alice, value: payAmount });
 
+    const splitterBalanceAlice = web3.utils.toBN(await inst.getBalance(alice));
     const splitterBalanceBob   = web3.utils.toBN(await inst.getBalance(bob));
     const splitterBalanceCarol = web3.utils.toBN(await inst.getBalance(carol));
 
-    const splitterBalanceBobExpected   = initialSplitterBalanceBob  .add(payAmount.div(new BN(2)).add(new BN(1)));
+    const splitterBalanceAliceExpected = initialSplitterBalanceAlice.add(new BN(1));
+    const splitterBalanceBobExpected   = initialSplitterBalanceBob  .add(payAmount.div(new BN(2)));
     const splitterBalanceCarolExpected = initialSplitterBalanceCarol.add(payAmount.div(new BN(2)));
 
+    assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
     assert.equal(splitterBalanceBob  .toString(), splitterBalanceBobExpected.toString(), "Bob's splitter balance is wrong.");
     assert.equal(splitterBalanceCarol.toString(), splitterBalanceCarolExpected.toString(), "Carlos's splitter balance is wrong.");
+  });
+
+  it("should properly update splitter balances on splitFunds() with odd amount transferred, if owner is recipientOne", async () => {
+    const payAmount = web3.utils.toWei(new BN(3), "finney").add(new BN(1));
+    await inst.splitFunds(alice, bob, { from: alice, value: payAmount });
+
+    const splitterBalanceAlice  = web3.utils.toBN(await inst.getBalance(alice));
+    const splitterBalanceBob   = web3.utils.toBN(await inst.getBalance(bob));
+
+    const splitterBalanceAliceExpected = initialSplitterBalanceAlice.add(payAmount.div(new BN(2)).add(new BN(1)));
+    const splitterBalanceBobExpected   = initialSplitterBalanceBob  .add(payAmount.div(new BN(2)));
+
+    assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
+    assert.equal(splitterBalanceBob  .toString(), splitterBalanceBobExpected.toString(), "Bob's splitter balance is wrong.");
+  });
+
+  it("should properly update splitter balances on splitFunds() with odd amount transferred, if owner is recipientTwo", async () => {
+    const payAmount = web3.utils.toWei(new BN(1), "finney").add(new BN(1));
+    await inst.splitFunds(bob, alice, { from: alice, value: payAmount });
+
+    const splitterBalanceAlice = web3.utils.toBN(await inst.getBalance(alice));
+    const splitterBalanceBob   = web3.utils.toBN(await inst.getBalance(bob));
+
+    const splitterBalanceAliceExpected = initialSplitterBalanceAlice.add(payAmount.div(new BN(2)).add(new BN(1)));
+    const splitterBalanceBobExpected   = initialSplitterBalanceBob  .add(payAmount.div(new BN(2)));
+
+    assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
+    assert.equal(splitterBalanceBob  .toString(), splitterBalanceBobExpected.toString(), "Bob's splitter balance is wrong.");
   });
 
   it("shouldn't send money on splitFunds()", async () => {
@@ -180,7 +219,5 @@ contract("Splitter", accounts => {
 
     assert.equal(splitterBalanceCarol.toString(), "0", "Carols's splitter balance is non-zero.");
   });
-
-
 
 });
