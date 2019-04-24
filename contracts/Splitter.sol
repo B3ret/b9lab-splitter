@@ -8,7 +8,7 @@ contract Splitter is Pausable {
 
     mapping(address => uint256) public _balances;
 
-    event LogWithdraw(address indexed addr);
+    event LogWithdraw(address indexed addr, uint256 withdrawAmount);
 
     event LogSplitFunds(address indexed sender, address indexed recipientOne, address indexed recipientTwo, uint256 paidAmount);
 
@@ -56,14 +56,14 @@ contract Splitter is Pausable {
      * contract is paused.
      */
     function withdraw() external {
-        uint256 sendAmount = _balances[msg.sender];
+        uint256 withdrawAmount = _balances[msg.sender];
 
-        require(sendAmount > 0, "PRE_BALANCE_WAS_ZERO");
+        require(withdrawAmount > 0, "PRE_BALANCE_WAS_ZERO");
 
         _balances[msg.sender] = 0;
 
-        emit LogWithdraw(msg.sender);
+        emit LogWithdraw(msg.sender, withdrawAmount);
 
-        msg.sender.transfer(sendAmount);
+        msg.sender.transfer(withdrawAmount);
     }
 }

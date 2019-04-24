@@ -33,12 +33,12 @@ contract("Splitter", accounts => {
   });
 
   it("should properly return splitter balance on getBalance() of untouched account", async () => {
-    splitterBalanceBob = toBN(await inst.getBalance(bob));
+    const splitterBalanceBob = toBN(await inst.getBalance(bob));
     assert.equal(splitterBalanceBob.toString(), '0', "Bob's splitter balance is wrong.");
   });
 
   it("should properly return splitter balance on getBalance() account with balance", async () => {
-    splitterBalanceCarol = toBN(await inst.getBalance(carol));
+    const splitterBalanceCarol = toBN(await inst.getBalance(carol));
     assert.equal(splitterBalanceCarol.toString(), initialSplitterBalanceCarol.toString(), "Carols's splitter balance is wrong.");
   });
 
@@ -202,10 +202,10 @@ contract("Splitter", accounts => {
   });
 
   it("should emit LogWithdraw() event on withdraw()", async () => {
-    let tx = await inst.withdraw({ from: carol });
+    const tx = await inst.withdraw({ from: carol });
 
     truffleAssert.eventEmitted(tx, "LogWithdraw", ev => {
-      return ev.addr == carol;
+      return ev.addr == carol && ev.withdrawAmount == initialSplitterBalanceAlice.toString();
     });
   });
 
@@ -213,12 +213,12 @@ contract("Splitter", accounts => {
   // integration with our splitter, as well as changes we did to Pausable in here.
   //
   it("should make splitter creator the owner", async () => {
-    let owner = await inst.owner();
+    const owner = await inst.owner();
 
     assert.equal(owner, alice, "Alice is not the owner!")
   });
   it("should not be paused at start", async () => {
-    let isPaused = await inst.paused();
+    const isPaused = await inst.paused();
 
     assert.equal(isPaused, false, "Splitter is paused at start!")
   });
