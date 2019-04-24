@@ -27,29 +27,20 @@ contract Splitter is Pausable {
     function splitFunds(address recipientOne, address recipientTwo) external payable whenNotPaused {
         require(recipientOne != address(0), "PRE_ADDRESS_WAS_NULL");
         require(recipientTwo != address(0), "PRE_ADDRESS_WAS_NULL");
-        require(recipientOne != recipientTwo, "PRE_ADDRESSES_WERE_NOT_DIFFERENT");
 
-        uint256 amount = msg.value / 2;
+        // Integer division rounds down.
+        //
+        uint256 halfAmount = msg.value / 2;
 
-        uint256 newAmountOne = _balances[recipientOne] + amount;
-        uint256 newAmountTwo = _balances[recipientTwo] + amount;
-
-        require(newAmountOne >= _balances[recipientOne] && newAmountOne >= amount, "ERR_WOULD_OVERFLOW");
-        require(newAmountTwo >= _balances[recipientTwo] && newAmountTwo >= amount, "ERR_WOULD_OVERFLOW");
-
-        _balances[recipientOne] = newAmountOne;
-        _balances[recipientTwo] = newAmountTwo;
+        _balances[recipientOne] += halfAmount;
+        _balances[recipientTwo] += halfAmount;
 
         // If the sender sends an odd amount, we'll put that extra wei into
         // the owners account, so he can collect the dust in case it accumulates.
-        // (This has to be after the first two updates, in case owner is also one
-        //  of the recipients.)
         //
         bool hasDust = (msg.value % 2) > 0;
         if(hasDust) {
-            uint256 newBalanceOwner = _balances[owner()] + 1;
-            require(newBalanceOwner >= _balances[owner()], "ERR_WOULD_OVERFLOW");
-            _balances[owner()] = newBalanceOwner;
+            _balances[owner()]++;
         }
 
         emit LogSplitFunds(msg.sender, recipientOne, recipientTwo, msg.value);

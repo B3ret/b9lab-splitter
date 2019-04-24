@@ -52,10 +52,6 @@ contract("Splitter", accounts => {
     await truffleAssert.reverts(inst.splitFunds(bob, nullAddress, { from: alice, value: 0 }));
   });
 
-  it("should revert splitFunds() with matching addresses", async () => {
-    await truffleAssert.reverts(inst.splitFunds(bob, bob, { from: alice, value: 0 }));
-  });
-
   it("shouldn't touch splitter balances on splitFunds() with nothing transferred", async () => {
     await inst.splitFunds(bob, carol, { from: alice, value: 0 });
 
@@ -100,6 +96,20 @@ contract("Splitter", accounts => {
     assert.equal(splitterBalanceCarol.toString(), splitterBalanceCarolExpected.toString(), "Carlos's splitter balance is wrong.");
   });
 
+  it("should properly update splitter balances on splitFunds() with two matching addresses", async () => {
+    const payAmount = web3.utils.toWei(new BN(2), "finney").add(new BN(1));
+    await inst.splitFunds(bob, bob, { from: alice, value: payAmount });
+
+    const splitterBalanceAlice = web3.utils.toBN(await inst.getBalance(alice));
+    const splitterBalanceBob   = web3.utils.toBN(await inst.getBalance(bob));
+
+    const splitterBalanceAliceExpected = initialSplitterBalanceAlice.add(new BN(1));
+    const splitterBalanceBobExpected   = initialSplitterBalanceBob  .add(payAmount.sub(new BN(1)));
+
+    assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
+    assert.equal(splitterBalanceBob  .toString(), splitterBalanceBobExpected.toString(), "Bob's splitter balance is wrong.");
+  });
+
   it("should properly update splitter balances on splitFunds() with odd amount transferred, if owner is recipientOne", async () => {
     const payAmount = web3.utils.toWei(new BN(3), "finney").add(new BN(1));
     await inst.splitFunds(alice, bob, { from: alice, value: payAmount });
@@ -126,6 +136,17 @@ contract("Splitter", accounts => {
 
     assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
     assert.equal(splitterBalanceBob  .toString(), splitterBalanceBobExpected.toString(), "Bob's splitter balance is wrong.");
+  });
+
+  it("should properly update splitter balances on splitFunds() with owner being both recipiens", async () => {
+    const payAmount = web3.utils.toWei(new BN(1), "finney").add(new BN(1));
+    await inst.splitFunds(alice, alice, { from: alice, value: payAmount });
+
+    const splitterBalanceAlice = web3.utils.toBN(await inst.getBalance(alice));
+
+    const splitterBalanceAliceExpected = initialSplitterBalanceAlice.add(payAmount);
+
+    assert.equal(splitterBalanceAlice.toString(), splitterBalanceAliceExpected.toString(), "Alice's splitter balance is wrong.");
   });
 
   it("shouldn't send money on splitFunds()", async () => {
